@@ -38,12 +38,12 @@ function resolveInherit(node, root) {
 	var dom = node;
 	for(var i = 0; i < node.classList.length; i ++) {
 		var target = "prototype." + node.classList[i]
-		var cnodes = root.find(target).get(0).childNodes
-		for(var j = cnodes.length - 1; j >= 0; j --)
-			dom.insertBefore(cnodes[j].cloneNode(true), dom.firstChild)
+		root.find(target).each((i, found) => { 
+			var cnodes = found.childNodes;
+			for(var j = cnodes.length - 1; j >= 0; j --)
+				dom.insertBefore(cnodes[j].cloneNode(true), dom.firstChild)
+		})
 	}
-
-	console.log("dom", dom)
 	return dom;
 }
 
@@ -152,13 +152,15 @@ function controlHover(dom, canvas, system, response) {
 			var pos = dom.offset();
 			var mousePoint = arbor.Point(
 				element.pageX - pos.left, element.pageY - pos.top);
-			nearest = system.nearest(mousePoint)
-			if(nearest != lastNearest) {
-				var lastNode = lastNearest? lastNearest.node : null;
+			hover.nearest = system.nearest(mousePoint)
+			if(hover.nearest) hover.nearest = hover.nearest.node
+
+			if(hover.nearest != lastNearest) {
+				var lastNode = lastNearest? lastNearest : null;
 				var lastValue = lastNode? lastNode.data : null;
 				if(response && response.unhover) response.unhover(lastNode, lastValue);	
 
-				var currentNode = nearest? nearest.node : null;
+				var currentNode = hover.nearest? hover.nearest : null;
 				var currentValue = currentNode? currentNode.data : null;			
 				if(response && response.hover) response.hover(currentNode, currentValue);
 			}

@@ -8,7 +8,9 @@
 		<!-- arbor-helper.js --><script src="script/arbor-helper.js"></script>
 		<!-- arbor-helper-verbose.js --><script src="script/arbor-helper-verbose.js"></script>
 
-		<!-- preset/background.js --><script src="preset/background.js"></script>
+		<!-- preset/node.js --><script src="preset/node.js"></script>
+		<!-- preset/edge.js --><script src="preset/edge.js"></script>
+		<!-- preset/guard.js --><script src="preset/guard.js"></script>
 	</head>
 
 	<body style="background:black; color:white;">
@@ -16,6 +18,7 @@
 			<prototype class="normalNode">
 				<expand width="50" height="50"></expand>
 				<background color="#393"></background>
+				<onSelect><cornerFocus color="#393"></cornerFocus></onSelect>
 			</prototype>
 
 			<node id="node1" class="normalNode"></node>
@@ -27,14 +30,24 @@
 			<node id="node7" class="normalNode"></node>
 			<node id="node8" class="normalNode"></node>
 
-			<edge src="node1" dest="node2"></edge><edge src="node2" dest="node3"></edge>
-			<edge src="node3" dest="node4"></edge><edge src="node4" dest="node1"></edge>
+			<prototype class="normalEdge">
+				<normalLine color="#393"></normalLine>
+			</prototype>
 
-			<edge src="node1" dest="node5"></edge><edge src="node2" dest="node6"></edge>
-			<edge src="node3" dest="node7"></edge><edge src="node4" dest="node8"></edge>
+			<edge src="node1" dest="node2" class="normalEdge"></edge>
+			<edge src="node2" dest="node3" class="normalEdge"></edge>
+			<edge src="node3" dest="node4" class="normalEdge"></edge>
+			<edge src="node4" dest="node1" class="normalEdge"></edge>
 
-			<edge src="node5" dest="node6"></edge><edge src="node6" dest="node7"></edge>
-			<edge src="node7" dest="node8"></edge><edge src="node8" dest="node5"></edge>
+			<edge src="node1" dest="node5" class="normalEdge"></edge>
+			<edge src="node2" dest="node6" class="normalEdge"></edge>
+			<edge src="node3" dest="node7" class="normalEdge"></edge>
+			<edge src="node4" dest="node8" class="normalEdge"></edge>
+
+			<edge src="node5" dest="node6" class="normalEdge"></edge>
+			<edge src="node6" dest="node7" class="normalEdge"></edge>
+			<edge src="node7" dest="node8" class="normalEdge"></edge>
+			<edge src="node8" dest="node5" class="normalEdge"></edge>
 		</canvas>
 
 		<script>

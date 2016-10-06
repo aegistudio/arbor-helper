@@ -9,9 +9,20 @@ var registry = {}
  * specified renderer.
  */
 
-function initMaxSize(d) {
-	d.maxWidth =  d.dom.attributes.width? d.dom.attributes.width.value : 0;
-	d.maxHeight = d.dom.attributes.height? d.dom.attributes.height.value : 0;
+function dispatchDrawNode(system, canvas, context, n, p, d, dom) {
+	$(dom).children().each((i, element) => {
+		var calling = registry[element.localName];
+		if(calling && calling.drawNode) 
+			calling.drawNode(element, system, canvas, context, n, p, d);
+	});
+}
+
+function dispatchDrawEdge(system, canvas, context, e, s, d, ed, dom) {
+	$(dom).children().each((i, element) => {
+		var calling = registry[element.localName];
+		if(calling && calling.drawEdge) 
+			calling.drawEdge(element, system, canvas, context, e, s, d, ed);
+	});
 }
 
 var verboseRenderer = (system, canvas, context) => { return {
@@ -23,34 +34,29 @@ var verboseRenderer = (system, canvas, context) => { return {
 		}
 	},
 
-	drawNode: function(e, p, d) {
-		initMaxSize(d)
-
-		$(d.dom).children().each((i, element) => {
-			var calling = registry[element.localName];
-			if(calling && calling.drawNode) 
-				calling.drawNode(element, system, canvas, context, e, p, d);
-		});
+	drawNode: function(n, p, d) {
+		d.maxWidth =  d.dom.attributes.width? d.dom.attributes.width.value : 0;
+		d.maxHeight = d.dom.attributes.height? d.dom.attributes.height.value : 0;
+		dispatchDrawNode(system, canvas, context, n, p, d, d.dom);
 	},
 
 	drawEdge: function(e, s, d, ed) {
-		initMaxSize(ed)
-
-		$(ed.dom).children().each((i, element) => {
-			var calling = registry[element.localName];
-			if(calling && calling.drawEdge) 
-				calling.drawEdge(element, system, canvas, context, e, s, d, ed);
-		});
+		dispatchDrawEdge(system, canvas, context, e, s, d, ed, ed.dom);
 	}
 }; }
 
+function dispatchResponse(n, nd, func, dom) {
+	console.log("dom", dom)
+	$(dom).children().each((i, element) => {
+		var calling = registry[element.localName];
+		if(calling && calling[func]) 
+			calling[func](n, nd, element);
+	});
+}
+
 var verboseResponse = {
 	wrapper: function(n, nd, func) {
-		if(n) $(nd.dom).children().each((i, element) => {
-			var calling = registry[element.localName];
-			if(calling && calling[func]) 
-				calling[func](n, nd, element);
-		});
+		if(n) dispatchResponse(n, nd, func, nd.dom);
 	},
 
 	focus: (n, nd) => verboseResponse.wrapper(n, nd, 'focus'),
@@ -65,8 +71,9 @@ function verboseFacade(dom, canvas, particleSystem) {
 	controlHover(dom, canvas, particleSystem, verboseResponse);
 }
 
-function getAttribute(dom, data, name) {
+function getAttribute(dom, data, name, normalValue) {
 	if(dom.attributes[name]) return dom.attributes[name].value
 	if(data[name]) return data[name]
 	if(data.dom.attributes[name]) return data.dom.attributes[name].value
+	return normalValue
 }
