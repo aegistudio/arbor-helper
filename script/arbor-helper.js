@@ -13,7 +13,7 @@ function setup(dom, canvas, system, createRenderer) {
 		redraw: () => {
 			actualRenderer.clear();
 			system.eachEdge((e, s, d) => actualRenderer.drawEdge(e, s, d, e.data));
-			system.eachNode((e, p) => actualRenderer.drawNode(e, p, e.data));
+			system.eachNode((n, p) => actualRenderer.drawNode(n, p, n.data));
 		},
 
 		init: (anySystem) => {
@@ -34,8 +34,21 @@ function setup(dom, canvas, system, createRenderer) {
 	$(window).resize(system.renderer.resize)
 }
 
+function resolveInherit(node, root) {
+	var dom = node;
+	for(var i = 0; i < node.classList.length; i ++) {
+		var target = "prototype." + node.classList[i]
+		var cnodes = root.find(target).get(0).childNodes
+		for(var j = cnodes.length - 1; j >= 0; j --)
+			dom.insertBefore(cnodes[j].cloneNode(true), dom.firstChild)
+	}
+
+	console.log("dom", dom)
+	return dom;
+}
+
 /**
- * Remove all elements with tag 'node' or 'edge' from the html.
+ * Remove all elements with tag 'prototype', 'node' or 'edge' from the html.
  * And add them to the particle system meantime.
  */
 
@@ -45,7 +58,7 @@ function convert(system, visitor, root) {
 	root.find("node").each((index, node) => {
 		if(!node.id) node.id = "node" + index;
 
-		var nodeValue = { id: node.id, dom: node };
+		var nodeValue = { id: node.id, dom: resolveInherit(node, root) };
 		if(visitor && visitor.visitNode) visitor.visitNode(nodeValue)
 		system.addNode(node.id, nodeValue);
 	});
@@ -55,11 +68,13 @@ function convert(system, visitor, root) {
 		var esrc = edge.attributes['src'].value || edge.attributes['source'].value; if(!esrc) return;
 		var edest = edge.attributes['dest'].value || edge.attributes['destination'].value; if(!edest) return;
 
-		var edgeValue = { src: esrc, source: esrc, dest: edest, destination: edest, dom: edge };
+		var edgeValue = { src: esrc, source: esrc, dest: edest, destination: edest, dom: resolveInherit(edge, root) };
 		if(visitor && visitor.visitEdge) visitor.visitEdge(edgeValue)
 		system.addEdge(esrc, edest, edgeValue);
 	});
 	root.find("edge").remove();
+
+	root.find("prototype").remove();
 }
 
 /**
@@ -86,7 +101,9 @@ function controlDrag(dom, canvas, system, response) {
 			nearest = system.nearest(drag.getMousePoint(element))
 			selected = dragged = nearest;
 			
-			if(response && response.focus) response.focus(selected.node, selected.node.data)
+			if(response && response.focus&& selected)
+				response.focus(selected.node, selected.node.data)
+
 			if(dragged.node) dragged.node.fixed = true
 
 			dom.bind('mousemove', drag.drag)
@@ -106,7 +123,8 @@ function controlDrag(dom, canvas, system, response) {
 		drop: function(){
 			if (!dragged || !dragged.node) return
 			if (dragged.node) dragged.node.fixed = false
-			if(response && response.unfocus) response.unfocus(selected.node, selected.node.data)
+			if(response && response.unfocus && selected)
+				response.unfocus(selected.node, selected.node.data)
 
 			dragged.node.tempMass = 50
 			dragged = null

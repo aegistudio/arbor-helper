@@ -1,0 +1,55 @@
+<html>
+	<head>
+		<title></title>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"></meta>
+		<!-- jquery-min.js --><script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+		<!-- arbor.js --><script src="script/arbor.js"></script>
+		<!-- arbor-tween.js --><script src="script/arbor-tween.js"></script>
+		<!-- arbor-helper.js --><script src="script/arbor-helper.js"></script>
+		<!-- arbor-helper-verbose.js --><script src="script/arbor-helper-verbose.js"></script>
+
+		<!-- preset/background.js --><script src="preset/background.js"></script>
+	</head>
+
+	<body style="background:black; color:white;">
+		<canvas id="paintCanvas" style="width:100%; height:80%" clearColor="#000c00">
+			<prototype class="normalNode">
+				<expand width="50" height="50"></expand>
+				<background color="#393"></background>
+			</prototype>
+
+			<node id="node1" class="normalNode"></node>
+			<node id="node2" class="normalNode"></node>
+			<node id="node3" class="normalNode"></node>
+			<node id="node4" class="normalNode"></node>
+			<node id="node5" class="normalNode"></node>
+			<node id="node6" class="normalNode"></node>
+			<node id="node7" class="normalNode"></node>
+			<node id="node8" class="normalNode"></node>
+
+			<edge src="node1" dest="node2"></edge><edge src="node2" dest="node3"></edge>
+			<edge src="node3" dest="node4"></edge><edge src="node4" dest="node1"></edge>
+
+			<edge src="node1" dest="node5"></edge><edge src="node2" dest="node6"></edge>
+			<edge src="node3" dest="node7"></edge><edge src="node4" dest="node8"></edge>
+
+			<edge src="node5" dest="node6"></edge><edge src="node6" dest="node7"></edge>
+			<edge src="node7" dest="node8"></edge><edge src="node8" dest="node5"></edge>
+		</canvas>
+
+		<script>
+			$(document).ready(function init() {
+				var dom = $("#paintCanvas");
+				var canvas = $("#paintCanvas").get(0);
+				var particleSystem = arbor.ParticleSystem({
+					friction: 10000,
+					stiffness: 600,
+					repulsion: 1
+				});
+				particleSystem.fps(30);
+				verboseFacade(dom, canvas, particleSystem);
+				convert(particleSystem);
+			});
+		</script>
+	</body>
+</html>
