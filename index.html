@@ -1,0 +1,120 @@
+<html>
+	<head>
+		<title></title>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"></meta>
+		<!-- jquery-min.js --><script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+		<!-- arbor.js --><script src="script/arbor.js"></script>
+		<!-- arbor-tween.js --><script src="script/arbor-tween.js"></script>
+		<!-- arbor-helper.js --><script src="script/arbor-helper.js"></script>
+	</head>
+
+	<body style="background:black; color:white;">
+		<canvas id="paintCanvas" style="width:100%; height:80%">
+			<node id="node1"></node><node id="node2"></node><node id="node3"></node><node id="node4"></node>
+			<node id="node5"></node><node id="node6"></node><node id="node7"></node><node id="node8"></node>
+
+			<edge src="node1" dest="node2"></edge><edge src="node2" dest="node3"></edge>
+			<edge src="node3" dest="node4"></edge><edge src="node4" dest="node1"></edge>
+
+			<edge src="node1" dest="node5"></edge><edge src="node2" dest="node6"></edge>
+			<edge src="node3" dest="node7"></edge><edge src="node4" dest="node8"></edge>
+
+			<edge src="node5" dest="node6"></edge><edge src="node6" dest="node7"></edge>
+			<edge src="node7" dest="node8"></edge><edge src="node8" dest="node5"></edge>
+		</canvas>
+
+		<script>
+			var clicked = null;
+			var hovered = null;
+
+			function createRenderer(particleSystem, canvas, context) {
+				return {
+					clear: function() {
+						context.fillStyle = "#000c00";
+						context.fillRect(0, 0, canvas.width, canvas.height);
+					},
+					drawNode: function(node, center, data) {
+						var width = 32;
+						var height = 32;
+						var corner = 4;
+
+						context.fillStyle = "#393";
+						context.fillRect(center.x - width / 2, center.y - height / 2, width, height);
+
+						var x0 = center.x - width / 2;
+						var x1 = center.x + width / 2;
+						var y0 = center.y - height / 2;
+						var y1 = center.y + height / 2
+
+						if(hovered == node) {
+							context.lineWidth = 2;
+
+							context.beginPath();
+							context.moveTo(x0 - corner, y1 - corner)
+							context.lineTo(x0 - corner, y1 + corner)
+							context.lineTo(x0 + corner, y1 + corner)
+							context.stroke();
+
+							context.beginPath();
+							context.moveTo(x0 - corner, y0 + corner)
+							context.lineTo(x0 - corner, y0 - corner)
+							context.lineTo(x0 + corner, y0 - corner)
+							context.stroke();
+
+							context.beginPath();
+							context.moveTo(x1 + corner, y1 - corner)
+							context.lineTo(x1 + corner, y1 + corner)
+							context.lineTo(x1 - corner, y1 + corner)
+							context.stroke();
+
+							context.beginPath();
+							context.moveTo(x1 + corner, y0 + corner)
+							context.lineTo(x1 + corner, y0 - corner)
+							context.lineTo(x1 - corner, y0 - corner)
+							context.stroke();
+
+						}
+						if(clicked == node || hovered == node) {
+							context.fillStyle = "#191";
+							context.font = "bold 16px Courier New";
+							var metric = context.measureText(data.id);
+							context.fillText(data.id, center.x - metric.width / 2, center.y + height + 5);
+						}
+					},
+					drawEdge: function(edge, source, dest) {
+						context.strokeStyle = "#363";
+						context.lineWidth = 1;
+
+						context.beginPath();
+						context.moveTo(source.x, source.y);
+						context.lineTo(dest.x, dest.y);
+						context.stroke();
+					}
+				};
+			}
+
+			$(document).ready(function init() {
+				var dom = $("#paintCanvas")
+				var canvas = $("#paintCanvas").get(0);
+				var particleSystem = arbor.ParticleSystem({
+					friction: 10000,
+					stiffness: 600,
+					repulsion: 1
+				});
+				particleSystem.fps(20)
+				setup(dom, canvas, particleSystem, createRenderer);
+				controlDrag(dom, canvas, particleSystem, {
+					focus: (e) => clicked = e,
+					//unfocus: (e) => clicked = null
+				});
+				controlHover(dom, canvas, particleSystem, {
+					hover: (e) => hovered = e
+				});
+				convert(particleSystem, { 
+					visitNode: (e) => console.log("aNode", e),
+					visitEdge: (e) => console.log("aEdge", e)
+				});
+			});
+		</script>
+	</body>
+</html>
